@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "492305583429",
+    "project_id": "restaurant-22176",
+    "storage_bucket": "restaurant-22176.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492305583429:android:f2c5111c4642f93079c22c",
+        "android_client_info": {
+          "package_name": "com.leduc.restaurantserver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "492305583429-ct4u6h1mb49d9j395g1dr17f6i4e4502.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.leduc.restaurantserver",
+            "certificate_hash": "f1bab3186177cf458fb69aa7604c0abbfd6dfea0"
+          }
+        },
+        {
+          "client_id": "492305583429-vujef2rs7bdnt5irt3a7ar6k0fj37ef3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkhPg6240MHlYsy4mk0qcIVZIV89vRe8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492305583429-vujef2rs7bdnt5irt3a7ar6k0fj37ef3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
