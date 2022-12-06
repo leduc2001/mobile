@@ -76,9 +76,9 @@ public class OrderStatus extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-        if (item.getIntent().equals(Common.UPDATE)) {
+        if (item.getTitle().equals(Common.UPDATE)) {
             showUpdateDialog(adapter.getRef(item.getOrder()).getKey(), adapter.getItem(item.getOrder()));
-        } else  if (item.getIntent().equals(Common.DELETE)) {
+        } else  if (item.getTitle().equals(Common.DELETE)) {
             deleteOrder(adapter.getRef(item.getOrder()).getKey());
         }
         return super.onContextItemSelected(item);

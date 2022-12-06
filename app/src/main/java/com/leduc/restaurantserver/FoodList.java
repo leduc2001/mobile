@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.arch.core.executor.DefaultTaskExecutor;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,6 +16,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,18 +31,23 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.leduc.restaurantserver.Interface.ItemClickListener;
-import com.leduc.restaurantserver.Model.Category;
 import com.leduc.restaurantserver.Model.Food;
 import com.leduc.restaurantserver.ViewHolder.FoodViewHolder;
+import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class FoodList extends AppCompatActivity {
@@ -52,7 +58,7 @@ public class FoodList extends AppCompatActivity {
     RelativeLayout rootLayout;
 
     FirebaseDatabase db;
-    DatabaseReference foodlist;
+    DatabaseReference foodList;
     FirebaseStorage storage;
     StorageReference storageReference;
 
@@ -60,6 +66,10 @@ public class FoodList extends AppCompatActivity {
 
     FirebaseRecyclerAdapter<Food, FoodViewHolder> adapter;
 
+    //Search funcion
+    FirebaseRecyclerAdapter<Food,FoodViewHolder> searchAdapter;
+    List<String> suggestList = new ArrayList<>();
+    MaterialSearchBar materialSearchBar;
 
     //add new food
     EditText edtName, edtDescription, edtPrice, edtDiscount;
@@ -74,7 +84,7 @@ public class FoodList extends AppCompatActivity {
         setContentView(R.layout.activity_food_list);
 
         db = FirebaseDatabase.getInstance();
-        foodlist = db.getReference("Foods");
+        foodList = db.getReference("Foods");
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
 
@@ -99,6 +109,86 @@ public class FoodList extends AppCompatActivity {
         if (!categoryID.isEmpty()) {
             loadlistFood(categoryID);
         }
+
+        materialSearchBar = (MaterialSearchBar) findViewById(R.id.searchBar);
+        materialSearchBar.setHint("Enter your food");
+        loadSugget();
+        materialSearchBar.setLastSuggestions(suggestList);
+        materialSearchBar.setCardViewElevation(10);
+        materialSearchBar.addTextChangeListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                List<String> suggest = new ArrayList<>();
+                for (String search:suggestList) {
+                    if (search.toLowerCase().contains(materialSearchBar.getText().toLowerCase())) {
+                        suggest.add(search);
+                    }
+                }
+                materialSearchBar.setLastSuggestions(suggest);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) {
+                if(!enabled) {
+                    recyclerView.setAdapter(adapter);
+                }
+            }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+                startSearch(text);
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+
+            }
+        });
+    }
+
+    private void startSearch(CharSequence text) {
+        searchAdapter = new FirebaseRecyclerAdapter<Food, FoodViewHolder>(
+                Food.class,
+                R.layout.food_item,
+                FoodViewHolder.class,
+                foodList.orderByChild("name").equalTo(text.toString())
+        ) {
+            @Override
+            protected void populateViewHolder(FoodViewHolder viewHolder, Food model, int position) {
+                viewHolder.food_name.setText(model.getName());
+                Picasso.with(getBaseContext()).load(model.getImage()).into(viewHolder.food_image);
+            }
+        };
+        recyclerView.setAdapter(searchAdapter);
+    }
+
+    private void loadSugget() {
+        foodList.orderByChild("menuId").equalTo(categoryID)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot postSnapshot:dataSnapshot.getChildren()) {
+                            Food item = postSnapshot.getValue(Food.class);
+                            suggestList.add(item.getName());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 
     private void uploadImage() {
@@ -193,7 +283,7 @@ public class FoodList extends AppCompatActivity {
 
                 //create new category
                 if(newFood != null) {
-                    foodlist.push().setValue(newFood);
+                    foodList.push().setValue(newFood);
                     Snackbar.make(rootLayout, "New food " + newFood.getName() + " was added!", Snackbar.LENGTH_SHORT).show();
                 }
 
@@ -213,7 +303,7 @@ public class FoodList extends AppCompatActivity {
                 Food.class,
                 R.layout.food_item,
                 FoodViewHolder.class,
-                foodlist.orderByChild("menuId").equalTo(categoryID)
+                foodList.orderByChild("menuId").equalTo(categoryID)
         ) {
             @Override
             protected void populateViewHolder(FoodViewHolder viewHolder, Food model, int position) {
@@ -254,7 +344,7 @@ public class FoodList extends AppCompatActivity {
     }
 
     private void deleteFood(String key) {
-        foodlist.child(key).removeValue();
+        foodList.child(key).removeValue();
     }
 
     private void showUpdateFoodDialog(String key, Food item) {
@@ -308,7 +398,7 @@ public class FoodList extends AppCompatActivity {
                 item.setDiscount(edtDiscount.getText().toString());
                 item.setDescription(edtDescription.getText().toString());
 
-                foodlist.child(key).setValue(item);
+                foodList.child(key).setValue(item);
                 Snackbar.make(rootLayout, "Food " + item.getName() + " was edited!",
                         Snackbar.LENGTH_SHORT).show();
 

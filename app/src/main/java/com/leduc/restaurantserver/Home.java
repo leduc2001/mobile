@@ -82,7 +82,6 @@ public class Home extends AppCompatActivity
 
     Uri saveUri;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -294,6 +293,14 @@ public class Home extends AppCompatActivity
         if(id == R.id.nav_orders) {
             Intent orders = new Intent(Home.this, OrderStatus.class);
             startActivity(orders);
+        } else if(id == R.id.nav_home) {
+            Intent home = new Intent(Home.this, Home.class);
+            startActivity(home);
+        } else if (id == R.id.nav_sign_out) {
+            Intent signIn = new Intent(Home.this, SignIn.class);
+            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(signIn);
+            Toast.makeText(this,"Logout successfully!", Toast.LENGTH_SHORT).show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

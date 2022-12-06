@@ -44,7 +44,7 @@ public class SignIn extends AppCompatActivity {
         //Init FireBase
         FirebaseApp.initializeApp(this);
         db = FirebaseDatabase.getInstance();
-        users = db.getReference("Users");
+        users = db.getReference("User");
 
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
