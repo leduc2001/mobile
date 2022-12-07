@@ -49,6 +49,7 @@ import com.google.firebase.storage.UploadTask;
 import com.leduc.restaurantserver.Common.Common;
 import com.leduc.restaurantserver.Interface.ItemClickListener;
 import com.leduc.restaurantserver.Model.Category;
+import com.leduc.restaurantserver.Service.ListenOrder;
 import com.leduc.restaurantserver.ViewHolder.MenuViewHolder;
 import com.leduc.restaurantserver.databinding.ActivityHomeBinding;
 import com.rengwuxian.materialedittext.MaterialEditText;
@@ -122,6 +123,10 @@ public class Home extends AppCompatActivity
         recycler_menu.setLayoutManager(layoutManager);
 
         loadMenu();
+
+        Intent service = new Intent(Home.this, ListenOrder.class);
+        startService(service);
+
     }
 
     private void showDialog() {

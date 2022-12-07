@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -62,10 +63,27 @@ public class OrderStatus extends AppCompatActivity {
                 viewHolder.txtOrderAddress.setText(model.getAddress());
                 viewHolder.txtOrderPhone.setText(model.getPhone());
 
-                viewHolder.setItemClickListener(new ItemClickListener() {
+                viewHolder.btnEdit.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View view, int position, boolean isLongClick) {
-                        //just make sure app will not crash
+                    public void onClick(View view) {
+                        showUpdateDialog(adapter.getRef(position).getKey(), adapter.getItem(position));
+                    }
+                });
+
+                viewHolder.btnRemove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        deleteOrder(adapter.getRef(position).getKey());
+                    }
+                });
+
+                viewHolder.btnDetail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent orderDetail = new Intent(OrderStatus.this,OrderDetail.class);
+                        Common.currentRequest = model;
+                        orderDetail.putExtra("OrderId", adapter.getRef(position).getKey());
+                        startActivity(orderDetail);
                     }
                 });
             }
@@ -74,18 +92,9 @@ public class OrderStatus extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        if (item.getTitle().equals(Common.UPDATE)) {
-            showUpdateDialog(adapter.getRef(item.getOrder()).getKey(), adapter.getItem(item.getOrder()));
-        } else  if (item.getTitle().equals(Common.DELETE)) {
-            deleteOrder(adapter.getRef(item.getOrder()).getKey());
-        }
-        return super.onContextItemSelected(item);
-    }
-
     private void deleteOrder(String key) {
         requests.child(key).removeValue();
+        adapter.notifyDataSetChanged();
     }
 
     private void showUpdateDialog(String key, Request item) {
@@ -109,6 +118,7 @@ public class OrderStatus extends AppCompatActivity {
                 item.setStatus(String.valueOf(spinner.getSelectedIndex()));
 
                 requests.child(localKey).setValue(item);
+                adapter.notifyDataSetChanged();
             }
         });
         alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
